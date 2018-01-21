@@ -4,16 +4,19 @@
     <keep-alive>
       <router-view></router-view>
     </keep-alive>
+    <player></player>
   </div>
 </template>
 
 <script>
 import Tab from 'components/Tab/Tab.vue'
+import Player from 'components/player/player.vue'
 
 export default {
   name: 'app',
   components:{
-    Tab
+    Tab,
+    Player
   }
 }
 </script>
