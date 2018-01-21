@@ -1,6 +1,10 @@
 const state = {
     singer: {},
-    rec: {}
+    rec: {},
+    playing:false,
+    fullScreen:false,
+    playList:[],
+    currentIndex:-1
   }
   
   export default state
