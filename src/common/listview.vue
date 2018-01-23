@@ -10,7 +10,7 @@
       <div class="filter" ref="filter"></div>
     </div>
   <ul class="songs">
-    <li class="song" v-for="item in songs">{{item.name}}<p>{{item.al.name}} {{item.alia[0]}}</p></li>
+    <li class="song" v-for="(item,index) in songs" @click="selectItem(item,index)">{{item.name}}<p>{{item.al.name}} {{item.alia[0]}}</p></li>
   </ul>
   <div class="loading-container" v-show="!songs">
         <loading></loading>
@@ -33,6 +33,9 @@ export default {
     }
   },
   methods:{
+    selectItem(item,index){
+      this.$emit('select',item,index)
+    },
     back(){
       this.$router.back()
     }

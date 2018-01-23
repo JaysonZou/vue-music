@@ -1,34 +1,86 @@
 <template>
-  <div class="player" v-show="playList.length>0">
+  <div class="player" v-show="playList">
     <div class="normal-player" v-show="fullScreen">
-      bofangqi
+      <div class="background">
+        <img width="100%" height="100%" :src="currentSong.al.picUrl">
+      </div>
+      <div class="top">
+        <div class="back">
+          <i class="iconfont icon-houtui"></i>
+        </div>
+        <h1 class="title"></h1>
+        <h2 class="subtitle"></h2>
+      </div>
+      <div class="middle">
+        <div class="middle-l">
+          <div class="cd-wrapper">
+            <div class="cd">
+              <img class="image">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom">
+        <div class="operators">
+          <div class="icon i-left">
+            <i class="iconfont icon-icon-6"></i>
+          </div>
+          <div class="icon i-left">
+            <i class="iconfont icon-icon-4"></i>
+          </div>
+          <div class="icon i-center">
+            <i class="iconfont icon-icon-2"></i>
+          </div>
+          <div class="icon i-right">
+            <i class="iconfont icon-icon-3"></i>
+          </div>
+          <div class="icon i-right">
+            <i class="iconfont icon-icon-1"></i>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="mini-player" v-show="!fullScreen"></div>
+    <div class="mini-player" v-show="!fullScreen">
+      <div class="icon">
+        <img height="40" width="40">
+      </div>
+      <div class="text">
+        <h2 class="name"></h2>
+        <p class="desc"></p>
+      </div>
+      <div class="control"></div>
+      <div class="control">
+        <i class="icon-playlist"></i>
+      </div>
+    </div>
   </div>  
 </template>
 
 <script type="text/ecmascript-6">
-import {mapGetters} from 'vuex'
+import { mapGetters } from "vuex";
 
-export default{
-  computed:{
-    ...mapGetters([
-      'fullScreen',
-      'playList'
-    ])
+export default {
+  computed: {
+    ...mapGetters(["fullScreen", "playList","currentSong"])
+  },
+  watch: {
+    fullScreen(val, oldVal) {
+      console.log(val, oldVal);
+    }
   }
-}
-
+};
 </script>
 
 <style scoped>
+@import url(../../common/fonts2/iconfont.css);
+
 .player .normal-player{
   position: fixed;
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
-  z-index: 150;background-color: #31c27c;
+  z-index: 150;background-color: #eee;
 }
 .player .normal-player .background{
   position: absolute;
@@ -40,6 +92,19 @@ export default{
   opacity: .6;
   filter: blur(20px);
 }
+.normal-player .top .back{
+  position :absolute;
+  top: 0;
+  left: 6px;
+  z-index: 50;
+}
+.normal-player .back .icon-houtui {
+  display: block;
+  padding: 9px;
+  font-size: 25px;
+  color: #31c27c;
+  transform: rotate(-90deg);
+}
 .normal-player .top {
   position: relative;
   margin-bottom: 25px;
@@ -50,14 +115,85 @@ export default{
   line-height: 40px;
   text-align: center;
   font-size: 20px;
-  color: white;
+  color: black;
 }
 .normal-player .top .subtitle{
   line-height: 20px;
   text-align: center;
   font-size: 15px;
-  color: white;
+  color: black;
 }
+.middle {
+  position: fixed;
+  width: 100%;
+  top: 80px;
+  bottom: 170px;
+  white-space: nowrap;
+  font-size: 0;
+}
+.middle .middle-l {
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-top: 80%;
+}
+.middle .cd-wrapper{
+  position: absolute;
+  left: 10%;
+  top: 0;
+  width: 80%;
+  height: 100%;
+}
+.middle .cd {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 10px solid rgba(144, 144, 144, 0.1);
+  border-radius: 50%;
+}
+.middle .image {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+.bottom {
+  position: absolute;
+  bottom: 50px;
+  width: 100%;
+}
+.bottom .operators {
+  display: flex;
+  align-items: center;
+}
+.bottom .icon {
+  flex: 1;
+  color: #31c27c;
+  /* &.disable
+  color: $color-theme-d */
+}
+.bottom i{
+  font-size: 30px;
+}
+.bottom .i-left {
+  text-align: right;
+}
+.bottom .i-center {
+  text-align: center;
+  padding: 0 20px;
+}
+.bottom .i-center i {
+  font-size: 40px;
+}
+.bottom .i-right {
+  text-align: left;
+}
+
+
 .miniplayer{
   display: flex;
   align-items: center;
@@ -94,59 +230,26 @@ export default{
       .background
       .top
         .back
-          position absolute
-          top: 0
-          left: 6px
-          z-index: 50
+          
           .icon-back
-            display: block
-            padding: 9px
-            font-size: $font-size-large-x
-            color: $color-theme
-            transform: rotate(-90deg)
+            
         .title
         .subtitle
-          line-height: 20px
-          text-align: center
-          font-size: $font-size-medium
-          color: $color-text
+          
       .middle
-        position: fixed
-        width: 100%
-        top: 80px
-        bottom: 170px
-        white-space: nowrap
-        font-size: 0
+        
         .middle-l
-          display: inline-block
-          vertical-align: top
-          position: relative
-          width: 100%
-          height: 0
-          padding-top: 80%
+          
           .cd-wrapper
-            position: absolute
-            left: 10%
-            top: 0
-            width: 80%
-            height: 100%
+            
             .cd
-              width: 100%
-              height: 100%
-              box-sizing: border-box
-              border: 10px solid rgba(255, 255, 255, 0.1)
-              border-radius: 50%
+              
               &.play
                 animation: rotate 20s linear infinite
               &.pause
                 animation-play-state: paused
               .image
-                position: absolute
-                left: 0
-                top: 0
-                width: 100%
-                height: 100%
-                border-radius: 50%
+                
 
           .playing-lyric-wrapper
             width: 80%
@@ -176,9 +279,7 @@ export default{
               &.current
                 color: $color-text
       .bottom
-        position: absolute
-        bottom: 50px
-        width: 100%
+        
         .dot-wrapper
           text-align: center
           font-size: 0
@@ -213,24 +314,16 @@ export default{
           .progress-bar-wrapper
             flex: 1
         .operators
-          display: flex
-          align-items: center
+          
           .icon
-            flex: 1
-            color: $color-theme
-            &.disable
-              color: $color-theme-d
+            
             i
-              font-size: 30px
+            
           .i-left
-            text-align: right
+            
           .i-center
-            padding: 0 20px
-            text-align: center
             i
-              font-size: 40px
           .i-right
-            text-align: left
           .icon-favorite
             color: $color-sub-theme
       &.normal-enter-active, &.normal-leave-active

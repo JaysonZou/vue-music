@@ -1,12 +1,12 @@
 <template>
 <transition name="slide">
   <div class="singer-detail">
-    <listview :title="title" :bg-image="bgImage" :songs="songs"></listview>
+    <listview :title="title" :bg-image="bgImage" :songs="songs" @select="selectItem"></listview>
   </div>
 </transition>
 </template>
 <script>
-import {mapGetters} from 'vuex'
+import {mapGetters, mapActions} from 'vuex'
 import Listview from 'common/listview'
 
 export default {
@@ -30,6 +30,15 @@ export default {
         this._getDetail()
     },
     methods: {
+      selectItem(item,index){
+        this.selectPlay({
+          list:this.songs,
+          index
+        })
+      },
+      ...mapActions([
+        'selectPlay'
+      ]),
       _getDetail() {
         if (!this.singer.id) {  //back to singer
           this.$router.push('/singer')
