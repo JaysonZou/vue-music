@@ -1,3 +1,5 @@
+import * as types from './mutation-types'
+
 const mutations = {
     setSinger(state,singer){
         state.singer = singer
@@ -5,17 +7,18 @@ const mutations = {
     setRec(state,rec){
         state.rec = rec
     },
-    setPlaying(state,flag){
-        state.playing = flag
-    },
-    setFullScreen(state,flag){
-        state.fullScreen = flag
-    },
-    setPlayList(state,list){
-        state.playList = list
-    },
-    setCurrentIndex(state,index){
-        state.currentIndex = index
-    }
+  [types.SET_PLAYING_STATE](state, flag) {
+    state.playing = flag
+  },
+  [types.SET_FULL_SCREEN](state, flag) {
+    state.fullScreen = flag
+  },
+  [types.SET_PLAYLIST](state, list) {
+    state.playlist = list
+  },
+  [types.SET_CURRENT_INDEX](state, index) {
+    state.currentIndex = index
+  }
 }
+
 export default mutations
