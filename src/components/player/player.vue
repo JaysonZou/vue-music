@@ -1,21 +1,21 @@
 <template>
-  <div class="player" v-show="playList">
+  <div class="player" v-if="playList.length>0">
     <div class="normal-player" v-show="fullScreen">
       <div class="background">
-        <img width="100%" height="100%" :src="currentSong.al.picUrl">
+      <img width="100%" height="100%" :src="currentSong.al.picUrl">
       </div>
       <div class="top">
-        <div class="back">
+        <div class="back" @click="back">
           <i class="iconfont icon-houtui"></i>
         </div>
-        <h1 class="title"></h1>
-        <h2 class="subtitle"></h2>
+        <h1 class="title" v-html="currentSong.name"></h1>
+        <h2 class="subtitle" v-html="currentSong.al.name"></h2>
       </div>
       <div class="middle">
         <div class="middle-l">
           <div class="cd-wrapper">
             <div class="cd">
-              <img class="image">
+              <img class="image" :src="currentSong.al.picUrl">
             </div>
           </div>
         </div>
@@ -40,33 +40,40 @@
         </div>
       </div>
     </div>
-    <div class="mini-player" v-show="!fullScreen">
+    <div class="mini-player" v-show="!fullScreen" @click="open">
       <div class="icon">
-        <img height="40" width="40">
+        <img height="40" width="40" :src="currentSong.al.picUrl">
       </div>
       <div class="text">
-        <h2 class="name"></h2>
-        <p class="desc"></p>
+        <h2 class="name" v-html="currentSong.name"></h2>
+        <p class="desc" v-html="currentSong.al.name"></p>
       </div>
       <div class="control"></div>
       <div class="control">
-        <i class="icon-playlist"></i>
+        <i class="iconfont icon-icon-"></i>
       </div>
     </div>
   </div>  
 </template>
 
 <script type="text/ecmascript-6">
-import { mapGetters } from "vuex";
+import { mapGetters,mapMutations } from "vuex";
 
 export default {
+
   computed: {
     ...mapGetters(["fullScreen", "playList","currentSong"])
   },
-  watch: {
-    fullScreen(val, oldVal) {
-      console.log(val, oldVal);
-    }
+  methods:{
+    back(){
+      this.setFullScreen(false)
+    },
+    open(){
+      this.setFullScreen(true)
+    },
+    ...mapMutations({
+      setFullScreen : 'SET_FULL_SCREEN'
+    })
   }
 };
 </script>
@@ -80,7 +87,7 @@ export default {
   right: 0;
   top: 0;
   bottom: 0;
-  z-index: 150;background-color: #eee;
+  z-index: 150;background-color: black;
 }
 .player .normal-player .background{
   position: absolute;
@@ -108,20 +115,22 @@ export default {
 .normal-player .top {
   position: relative;
   margin-bottom: 25px;
+
 }
 .normal-player .top .title {
-  width: 70%;
+  position: static;
+  width: 80%;
   margin: 0 auto;
   line-height: 40px;
   text-align: center;
   font-size: 20px;
-  color: black;
+  color: white;
 }
 .normal-player .top .subtitle{
   line-height: 20px;
   text-align: center;
   font-size: 15px;
-  color: black;
+  color: white;
 }
 .middle {
   position: fixed;
@@ -194,7 +203,7 @@ export default {
 }
 
 
-.miniplayer{
+.mini-player{
   display: flex;
   align-items: center;
   position: fixed;
@@ -203,21 +212,21 @@ export default {
   z-index: 180;
   width: 100%;
   height: 60px;
-  background: #31c27c;
+  background: #eee;
       /* &.mini-enter-active, &.mini-leave-active
         transition: all 0.4s
       &.mini-enter, &.mini-leave-to
         opacity: 0 */
 }
-.miniplayer .icon {
+.mini-player .icon {
   flex: 0 0 40px;
   width: 40px;
-  padding: 0 10px 0 20px;
+  /* padding: 0 10px 0 20px; */
 }
-.miniplayer .icon img{
+.mini-player .icon img{
   border-radius: 50%;
 }
-.miniplayer .text{
+.mini-player .text{
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -225,6 +234,25 @@ export default {
   line-height: 20px;
   overflow: hidden;
 }
+.mini-player .text .name {
+  margin-bottom: 2px;
+  font-size: 14px;
+  color: black;
+}
+.mini-player .text .desc {
+  font-size: 12px;
+  color: black;
+}
+/* .mini-player .control{
+  flex: 0 0 30px;
+  width: 30px;
+  padding: 0 10px;
+} */
+.mini-player .icon-icon- {
+  font-size: 30px;
+  color: #31c27c;
+}
+
   /* .player
 
       .background
@@ -349,26 +377,15 @@ export default {
       .text
         
         .name
-          margin-bottom: 2px
-          no-wrap()
-          font-size: $font-size-medium
-          color: $color-text
+          
         .desc
-          no-wrap()
-          font-size: $font-size-small
-          color: $color-text-d
+          
       .control
-        flex: 0 0 30px
-        width: 30px
-        padding: 0 10px
         .icon-play-mini, .icon-pause-mini, .icon-playlist
           font-size: 30px
           color: $color-theme-d
         .icon-mini
-          font-size: 32px
-          position: absolute
-          left: 0
-          top: 0
+          
 
   @keyframes rotate
     0%
