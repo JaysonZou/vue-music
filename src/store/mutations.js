@@ -14,7 +14,7 @@ const mutations = {
     state.fullScreen = flag
   },
   [types.SET_PLAYLIST](state, list) {
-    state.playlist = list
+    state.playList = list
   },
   [types.SET_CURRENT_INDEX](state, index) {
     state.currentIndex = index
