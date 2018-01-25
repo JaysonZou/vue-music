@@ -63,7 +63,7 @@ export default {
   transition: all .5s linear;
 }
 .singer>img{
-  height: 8vh;
+  height: 50px;
   display: block;
   border-radius: 50%;
 }

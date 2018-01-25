@@ -89,8 +89,8 @@ export default {
 }
 .song {
   display: block;
-  padding: 2vh 20px;
-  font-size: 19px;
+  padding: 1vh 20px;
+  font-size: 18px;
   /* background-color: #eee; */
   border-bottom: 1px solid #ccc;
   margin: 3px;
