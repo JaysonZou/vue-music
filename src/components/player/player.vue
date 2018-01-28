@@ -1,5 +1,6 @@
 <template>
   <div class="player" v-if="playList.length>0">
+    <transition name="normal">
     <div class="normal-player" v-show="fullScreen">
       <div class="background">
       <img width="100%" height="100%" :src="currentSong.al.picUrl">
@@ -9,12 +10,12 @@
           <i class="iconfont icon-houtui"></i>
         </div>
         <h1 class="title" v-html="currentSong.name"></h1>
-        <h2 class="subtitle" v-html="currentSong.al.name"></h2>
+        <h2 class="subtitle" v-html="currentSong.ar[0].name"></h2>
       </div>
       <div class="middle">
         <div class="middle-l">
           <div class="cd-wrapper">
-            <div class="cd">
+            <div class="cd" :class="rta">
               <img class="image" :src="currentSong.al.picUrl">
             </div>
           </div>
@@ -29,7 +30,7 @@
             <i class="iconfont icon-icon-4"></i>
           </div>
           <div class="icon i-center">
-            <i class="iconfont icon-icon-2"></i>
+            <i @click="togglePlaying" :class="playIcon" class="iconfont"></i>
           </div>
           <div class="icon i-right">
             <i class="iconfont icon-icon-3"></i>
@@ -40,19 +41,25 @@
         </div>
       </div>
     </div>
+    </transition>
+    <transition name="mini">
     <div class="mini-player" v-show="!fullScreen" @click="open">
-      <div class="icon">
+      <div class="icon" :class="rta">
         <img height="40" width="40" :src="currentSong.al.picUrl">
       </div>
       <div class="text">
         <h2 class="name" v-html="currentSong.name"></h2>
-        <p class="desc" v-html="currentSong.al.name"></p>
+        <p class="desc" v-html="currentSong.ar[0].name"></p>
       </div>
-      <div class="control"></div>
+      <div class="control">
+        <i @click.stop="togglePlaying" class="iconfont" :class="playIcon"></i>
+      </div>
       <div class="control">
         <i class="iconfont icon-icon-"></i>
       </div>
     </div>
+    </transition>
+    <audio :src="curSong" ref="audio"></audio>
   </div>  
 </template>
 
@@ -60,9 +67,42 @@
 import { mapGetters,mapMutations } from "vuex";
 
 export default {
-
+  data(){
+    return {
+      curSong:''
+    }
+  },
+  watch:{
+    currentSong(){
+    this.axios.get("/api/music/url",{
+      params:{
+        id:this.currentSong.id
+      }
+    }).then(res => {
+      this.curSong = res.data.data[0].url
+      console.log(this.curSong)
+    })
+    },
+    curSong(){
+      this.$nextTick(() => {
+        this.$refs.audio.play();
+      })
+    },
+    playing(newPlaying){
+      const audio = this.$refs.audio
+      this.$nextTick(() => {
+        newPlaying?audio.play():audio.pause()
+      })
+    }
+  },
   computed: {
-    ...mapGetters(["fullScreen", "playList","currentSong"])
+    playIcon(){
+      return this.playing ? 'icon-icon-5' : 'icon-icon-2'
+    },
+    rta(){
+      return this.playing ? 'play' : 'play pause'
+    },
+    ...mapGetters(["fullScreen", "playList","currentSong","playing"])
   },
   methods:{
     back(){
@@ -72,8 +112,12 @@ export default {
       this.setFullScreen(true)
     },
     ...mapMutations({
-      setFullScreen : 'SET_FULL_SCREEN'
-    })
+      setFullScreen : 'SET_FULL_SCREEN',
+      setPlayingState: 'SET_PLAYING_STATE'
+    }),
+    togglePlaying(){
+      this.setPlayingState(!this.playing)
+    }
   }
 };
 </script>
@@ -201,6 +245,24 @@ export default {
 .bottom .i-right {
   text-align: left;
 }
+.normal-enter-active, .normal-leave-active{
+   transition: all 0.4s;
+}
+.normal-enter-active, .normal-leave-active .top{
+   transition: all 0.4s cubic-bezier(0.86, 0.18, 0.82, 1.32);
+}
+.normal-enter-active, .normal-leave-active .bottom{
+   transition: all 0.4s cubic-bezier(0.86, 0.18, 0.82, 1.32);
+}
+.normal-enter, .normal-leave-to{
+  opacity: 0;
+}
+.normal-enter, .normal-leave-to .top{
+  transform: translate3d(0, -100px, 0);
+}
+.normal-enter, .normal-leave-to .bottom {
+  transform: translate3d(0, 100px, 0);
+}
 
 
 .mini-player{
@@ -213,15 +275,17 @@ export default {
   width: 100%;
   height: 60px;
   background: #eee;
-      /* &.mini-enter-active, &.mini-leave-active
-        transition: all 0.4s
-      &.mini-enter, &.mini-leave-to
-        opacity: 0 */
+}
+ .mini-enter-active, .mini-leave-active{
+  transition: all 0.4s;
+ }
+.mini-enter, .mini-leave-to{
+  opacity: 0;
 }
 .mini-player .icon {
   flex: 0 0 40px;
   width: 40px;
-  /* padding: 0 10px 0 20px; */
+  margin: 0 10px;
 }
 .mini-player .icon img{
   border-radius: 50%;
@@ -243,16 +307,22 @@ export default {
   font-size: 12px;
   color: black;
 }
-/* .mini-player .control{
-  flex: 0 0 30px;
-  width: 30px;
-  padding: 0 10px;
-} */
-.mini-player .icon-icon- {
+.mini-player .iconfont {
   font-size: 30px;
   color: #31c27c;
+  margin-right: 5px;
 }
-
+.play{
+  animation: rotate 20s linear infinite;
+}
+.pause{
+  animation-play-state: paused;
+}
+@keyframes rotate{
+  0%  {transform: rotate(0);}
+  100% {transform: rotate(360deg);}
+}
+   
   /* .player
 
       .background
@@ -387,9 +457,5 @@ export default {
         .icon-mini
           
 
-  @keyframes rotate
-    0%
-      transform: rotate(0)
-    100%
-      transform: rotate(360deg) */
+   */
 </style>
