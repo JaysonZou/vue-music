@@ -27,13 +27,13 @@
             <i class="iconfont icon-icon-6"></i>
           </div>
           <div class="icon i-left">
-            <i class="iconfont icon-icon-4"></i>
+            <i @click="prev" class="iconfont icon-icon-4"></i>
           </div>
           <div class="icon i-center">
             <i @click="togglePlaying" :class="playIcon" class="iconfont"></i>
           </div>
           <div class="icon i-right">
-            <i class="iconfont icon-icon-3"></i>
+            <i @click="next" class="iconfont icon-icon-3"></i>
           </div>
           <div class="icon i-right">
             <i class="iconfont icon-icon-1"></i>
@@ -59,7 +59,7 @@
       </div>
     </div>
     </transition>
-    <audio :src="curSong" ref="audio"></audio>
+    <audio :src="curSong" ref="audio" @canplay="ready" @error="error"></audio>
   </div>  
 </template>
 
@@ -69,7 +69,8 @@ import { mapGetters,mapMutations } from "vuex";
 export default {
   data(){
     return {
-      curSong:''
+      curSong:'',
+      songReady: false
     }
   },
   watch:{
@@ -80,7 +81,6 @@ export default {
       }
     }).then(res => {
       this.curSong = res.data.data[0].url
-      console.log(this.curSong)
     })
     },
     curSong(){
@@ -91,7 +91,7 @@ export default {
     playing(newPlaying){
       const audio = this.$refs.audio
       this.$nextTick(() => {
-        newPlaying?audio.play():audio.pause()
+        newPlaying ? audio.play() : audio.pause();
       })
     }
   },
@@ -102,7 +102,7 @@ export default {
     rta(){
       return this.playing ? 'play' : 'play pause'
     },
-    ...mapGetters(["fullScreen", "playList","currentSong","playing"])
+    ...mapGetters(["fullScreen", "playList","currentSong","playing","currentIndex"])
   },
   methods:{
     back(){
@@ -111,9 +111,40 @@ export default {
     open(){
       this.setFullScreen(true)
     },
+    ready(){
+      this.songReady = true
+    },
+    error(){
+      this.songReady = true
+    },
+    next(){
+      if(!this.songReady) return
+      let index = this.currentIndex + 1
+      if(index === this.playList.length) {
+        index = 0
+      }
+      this.setCurrentIndex(index)
+      if(!this.playing){
+        this.togglePlaying()
+      }
+      this.songReady = false
+    },
+    prev(){
+      if(!this.songReady) return
+      let index = this.currentIndex - 1
+      if(index === -1){
+        index = this.playList.length - 1
+      }
+      this.setCurrentIndex(index)
+      if(!this.playing){
+        this.togglePlaying()
+      }
+      this.songReady = false
+    },
     ...mapMutations({
       setFullScreen : 'SET_FULL_SCREEN',
-      setPlayingState: 'SET_PLAYING_STATE'
+      setPlayingState: 'SET_PLAYING_STATE',
+      setCurrentIndex: 'SET_CURRENT_INDEX'
     }),
     togglePlaying(){
       this.setPlayingState(!this.playing)
@@ -226,8 +257,6 @@ export default {
 .bottom .icon {
   flex: 1;
   color: #31c27c;
-  /* &.disable
-  color: $color-theme-d */
 }
 .bottom i{
   font-size: 30px;
