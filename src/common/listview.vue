@@ -1,9 +1,17 @@
 <template>
 <div class="listview">
+  <!-- <div class="top">
   <div class="back" @click="back">
       <i class="icon-back">&lt;</i>
   </div>
   <h2 class="title" v-html="title"  ref="title"></h2>
+  </div> -->
+  <div class="top" ref="top">
+    <div class="back" @click="back">
+        <i class="iconfont icon-houtui"></i>
+    </div>
+        <h2 class="title" v-html="title"></h2>
+  </div>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-wrapper">
       </div>
@@ -45,17 +53,41 @@ export default {
   }
 };
 </script>
-<style>
+<style scoped>
+@import url(./fonts2/iconfont.css);
+
 .listview {
-  /* position: fixed; */
-  /* width: 100vw; */
   z-index: 100;
-  /* top: 0;
-  left: 0; 
-  bottom: 0;
-  right: 0; */
 }
-.back {
+.top {
+  position: fixed;
+  width: 100%;
+  margin-bottom: 25px;
+  z-index: 40;
+  background-color: transparent;
+}
+.top .back{
+  position :absolute;
+  top: 0;
+  left: 6px;
+  z-index: 50;
+}
+.back .icon-houtui {
+  display: block;
+  padding: 9px;
+  font-size: 25px;
+  color: #31c27c;
+}
+.top .title {
+  position: static;
+  width: 80%;
+  margin: 0 auto;
+  line-height: 40px;
+  text-align: center;
+  font-size: 20px;
+  color: white;
+}
+/* .back {
   position: fixed;
   top: 0;
   left: 6px;
@@ -78,7 +110,7 @@ export default {
   color: white;
   font-size: 20px;
   background: transparent;
-}
+} */
 .bg-image {
   position: relative;
   width: 100%;
