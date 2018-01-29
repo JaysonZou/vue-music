@@ -22,6 +22,13 @@
         </div>
       </div>
       <div class="bottom">
+        <div class="progress-wrapper">
+          <span class="time time-l">{{format(currentTime)}}</span>
+          <div class="progress-bar-wrapper">
+            <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
+          </div>
+          <span class="time time-r">{{format(songDuration)}}</span>
+        </div>
         <div class="operators">
           <div class="icon i-left">
             <i class="iconfont icon-icon-6"></i>
@@ -59,40 +66,45 @@
       </div>
     </div>
     </transition>
-    <audio :src="curSong" ref="audio" @canplay="ready" @error="error"></audio>
+    <audio :src="curSong" ref="audio" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
   </div>  
 </template>
 
 <script type="text/ecmascript-6">
 import { mapGetters,mapMutations } from "vuex";
+import progressBar from 'common/progress-bar.vue'
 
 export default {
   data(){
     return {
       curSong:'',
-      songReady: false
+      songReady: false,
+      currentTime: 0,
+      songDuration: 0,
+      lyric: ''
     }
   },
   watch:{
-    currentSong(){
-    this.axios.get("/api/music/url",{
-      params:{
-        id:this.currentSong.id
-      }
-    }).then(res => {
-      this.curSong = res.data.data[0].url
-    })
+    currentIndex(){
+      this._getSongUrl().then((res) =>{
+        this.curSong = res.data.data[0].url
+      })
+
     },
     curSong(){
-      this.$nextTick(() => {
-        this.$refs.audio.play();
+        this.$nextTick(() => {
+          this.$refs.audio.play();
+        })
+      this._getLyric().then(res => {
+        this.lyric = res.data.lrc.lyric
+        console.log('lyric done!')
       })
     },
     playing(newPlaying){
-      const audio = this.$refs.audio
-      this.$nextTick(() => {
-        newPlaying ? audio.play() : audio.pause();
-      })
+        const audio = this.$refs.audio
+        this.$nextTick(() => {
+          newPlaying ? audio.play() : audio.pause();
+        })
     }
   },
   computed: {
@@ -102,8 +114,12 @@ export default {
     rta(){
       return this.playing ? 'play' : 'play pause'
     },
+    percent(){
+      return this.currentTime  / this.songDuration
+    },
     ...mapGetters(["fullScreen", "playList","currentSong","playing","currentIndex"])
   },
+
   methods:{
     back(){
       this.setFullScreen(false)
@@ -141,6 +157,30 @@ export default {
       }
       this.songReady = false
     },
+    updateTime(e){
+      this.currentTime = e.target.currentTime
+      this.songDuration = e.target.duration
+    },
+    format(interval){
+      interval = interval | 0
+      const min = interval / 60 | 0
+      const sec = this._pad(interval%60)
+      return `${min}:${sec}`
+    },
+    _pad(num,n=2){
+      let len = num.toString().length
+      while (len<n){
+        num = '0'+num
+        len++
+      }
+      return num
+    },
+    onProgressBarChange(percent){
+      this.$refs.audio.currentTime = this.songDuration * percent
+      if(!this.playing){
+        this.togglePlaying()
+      }
+    },
     ...mapMutations({
       setFullScreen : 'SET_FULL_SCREEN',
       setPlayingState: 'SET_PLAYING_STATE',
@@ -148,7 +188,22 @@ export default {
     }),
     togglePlaying(){
       this.setPlayingState(!this.playing)
+    },
+    _getSongUrl: async function(){
+      var result = await this.axios.get("/api/music/url",{
+        params:{id:this.currentSong.id}
+      })
+      return result
+    },
+    _getLyric: async function(){
+      var lyric = this.axios.get("/api/lyric",{
+        params:{id: this.currentSong.id}
+      })
+      return lyric
     }
+  },
+  components:{
+    progressBar
   }
 };
 </script>
@@ -174,6 +229,10 @@ export default {
   opacity: .6;
   filter: blur(20px);
 }
+.normal-player .top {
+  position: relative;
+  margin-bottom: 25px;
+}
 .normal-player .top .back{
   position :absolute;
   top: 0;
@@ -186,11 +245,6 @@ export default {
   font-size: 25px;
   color: #31c27c;
   transform: rotate(-90deg);
-}
-.normal-player .top {
-  position: relative;
-  margin-bottom: 25px;
-
 }
 .normal-player .top .title {
   position: static;
@@ -249,6 +303,29 @@ export default {
   position: absolute;
   bottom: 50px;
   width: 100%;
+}
+.bottom .progress-wrapper{
+  display: flex;
+  align-items: center;
+  width: 80%;
+  margin: 0px auto;
+  padding: 10px 0;
+}
+.bottom .progress-wrapper .time{
+  color: #ccc;
+  font-size: 8px;
+  flex: 0 0 30px;
+  line-height: 30px;
+  width: 30px;
+}
+.bottom .time .time-l{
+  text-align: left;
+}
+.bottom .time .time-r{
+  text-align: right;
+}
+.bottom .progress-bar-wrapper{
+  flex:1;
 }
 .bottom .operators {
   display: flex;
@@ -422,24 +499,7 @@ export default {
               width: 20px
               border-radius: 5px
               background: $color-text-ll
-        .progress-wrapper
-          display: flex
-          align-items: center
-          width: 80%
-          margin: 0px auto
-          padding: 10px 0
-          .time
-            color: $color-text
-            font-size: $font-size-small
-            flex: 0 0 30px
-            line-height: 30px
-            width: 30px
-            &.time-l
-              text-align: left
-            &.time-r
-              text-align: right
-          .progress-bar-wrapper
-            flex: 1
+        
         .operators
           
           .icon
