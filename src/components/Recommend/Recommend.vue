@@ -116,17 +116,18 @@ export default {
 }
 .rec-list h3{
   text-align: center;
+  margin-bottom: 20px;
 }
 .music-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-around;
+  justify-content: space-between;
   width: 100%;
 }
 .play-item{
   display: flex;
   flex-direction: column;
-  width: 31%;
+  width: 33%;
   /* padding: 3px; */
   margin-bottom: 10px;
   /* height: 30vh; */

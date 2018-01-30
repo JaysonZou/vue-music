@@ -1,5 +1,5 @@
 <template>
-<div class="listview">
+<div class="listview" @scroll="pageSlide">
   <!-- <div class="top">
   <div class="back" @click="back">
       <i class="icon-back">&lt;</i>
@@ -8,16 +8,15 @@
   </div> -->
   <div class="top" ref="top">
     <div class="back" @click="back">
-        <i class="iconfont icon-houtui"></i>
+        <i class="iconfont icon-houtui" ref="icon"></i>
     </div>
-        <h2 class="title" v-html="title"></h2>
+        <h2 class="title" v-html="title" ref="title"></h2>
   </div>
+  <div class="play-wrapper">
     <div class="bg-image" :style="bgStyle" ref="bgImage">
-      <div class="play-wrapper">
-      </div>
-      <div class="filter" ref="filter"></div>
     </div>
-  <ul class="songs">
+  </div>
+  <ul class="songs" ref="songs">
     <li class="song" v-for="(item,index) in songs" @click="selectItem(item,index)">{{item.name}}<p>{{item.al.name}} {{item.alia[0]}}</p></li>
   </ul>
   <div class="loading-container" v-show="!songs">
@@ -31,7 +30,7 @@ import Loading from 'common/loading/loading'
 export default {
   data(){
     return {
-      offsetY:0
+      scrollEnd: true
     }
   },
   props: ["bgImage", "title", "songs"],
@@ -46,6 +45,21 @@ export default {
     },
     back(){
       this.$router.back()
+    },
+    pageSlide(e){
+      if(!this.scrollEnd) return
+      this.scrollEnd = false
+      if(e.target.scrollTop >= 220){
+        this.$refs.bgImage.style.position = "fixed";
+        this.$refs.bgImage.style.paddingTop=0
+        this.$refs.bgImage.style.height= "40px"
+        this.$refs.bgImage.style.zIndex = 10;
+      }else{
+        this.$refs.bgImage.style.position = "relative"
+        this.$refs.bgImage.style.paddingTop= "70%"
+        this.$refs.bgImage.style.height= 0
+      }
+      this.scrollEnd = true
     }
   },
   components:{
@@ -57,8 +71,15 @@ export default {
 @import url(./fonts2/iconfont.css);
 
 .listview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: scroll;
   z-index: 100;
 }
+.listview::-webkit-scrollbar {display:none}
 .top {
   position: fixed;
   width: 100%;
@@ -114,7 +135,7 @@ export default {
 .bg-image {
   position: relative;
   width: 100%;
-  /* height: 0; */
+  height: 0;
   padding-top: 70%;
   transform-origin: top;
   background-size: cover;
@@ -123,9 +144,9 @@ export default {
   display: block;
   padding: 1vh 20px;
   font-size: 18px;
-  /* background-color: #eee; */
   border-bottom: 1px solid #ccc;
   margin: 3px;
+  background-color: #fff;
 }
 .song p{
   font-size: 13px;
