@@ -19,6 +19,11 @@
               <img class="image" :src="currentSong.al.picUrl">
             </div>
           </div>
+          <scroll class="playing-lyric-wrapper" :data="currentLyric && currentLyric.lines" ref="lyricList" v-if="currentLyric">
+              <div>
+                <p ref="lyricLine" class="text" :class="{'current': currentLineNum === index}" v-for="(line,index) in currentLyric.lines">{{line.txt}}</p>
+              </div>
+            </scroll>
         </div>
       </div>
       <div class="bottom">
@@ -72,7 +77,9 @@
 
 <script type="text/ecmascript-6">
 import { mapGetters,mapMutations } from "vuex";
-import progressBar from 'common/progress-bar.vue'
+import Scroll from 'common/scroll/scroll'
+import progressBar from 'common/progress-bar.vue';
+import LyricParser from 'lyric-parser';
 
 export default {
   data(){
@@ -81,7 +88,8 @@ export default {
       songReady: false,
       currentTime: 0,
       songDuration: 0,
-      lyric: ''
+      currentLyric: null,
+      currentLineNum: 0
     }
   },
   watch:{
@@ -96,8 +104,13 @@ export default {
           this.$refs.audio.play();
         })
       this._getLyric().then(res => {
-        this.lyric = res.data.lrc.lyric
-        console.log('lyric done!')
+        if(this.currentLyric){
+          this.currentLyric = null
+        }
+        this.currentLyric = new LyricParser(res.data.lrc.lyric,this.handlerLyric)
+        if(this.playing){
+          this.currentLyric.play()
+        }
       })
     },
     playing(newPlaying){
@@ -200,10 +213,20 @@ export default {
         params:{id: this.currentSong.id}
       })
       return lyric
+    },
+    handlerLyric(lineNum,txt){
+      this.currentLineNum = lineNum.lineNum
+      if(this.currentLineNum > 2){
+        let lineEl = this.$refs.lyricLine[this.currentLineNum - 2]
+        this.$refs.lyricList.scrollToElement(lineEl,1000)
+      }else{
+        this.$refs.lyricList.scrollTo(0,0,1000)
+      }
     }
   },
   components:{
-    progressBar
+    progressBar,
+    Scroll
   }
 };
 </script>
@@ -299,6 +322,21 @@ export default {
   height: 100%;
   border-radius: 50%;
 }
+.middle .playing-lyric-wrapper{
+  width: 80%;
+  height: 15vh;
+  margin: 20px auto 0 auto;
+  overflow: hidden;
+  text-align: center;
+}
+.middle .text{
+  font-size: 15px;
+  line-height: 5vh;
+  color: white;
+}
+.middle .text.current{
+   color: #31c27c;
+}  
 .bottom {
   position: absolute;
   bottom: 50px;
@@ -455,16 +493,7 @@ export default {
               .image
                 
 
-          .playing-lyric-wrapper
-            width: 80%
-            margin: 30px auto 0 auto
-            overflow: hidden
-            text-align: center
-            .playing-lyric
-              height: 20px
-              line-height: 20px
-              font-size: $font-size-medium
-              color: $color-text-l
+          
         .middle-r
           display: inline-block
           vertical-align: top
