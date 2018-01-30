@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
+    "better-scroll": "^1.8.0",
+    "lyric-parser": "^1.0.1",
     "vue": "^2.5.2",
     "vue-axios": "^2.0.2",
     "vue-lazyload": "^1.1.4",
