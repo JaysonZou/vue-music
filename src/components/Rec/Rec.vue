@@ -1,12 +1,12 @@
 <template>
 <transition name="slide">
   <div class="rec">
-    <listview :title="title" :bg-image="bgImage" :songs="songlists"></listview>
+    <listview :title="title" :bg-image="bgImage" :songs="songlists" @select="selectItem"></listview>
   </div>
 </transition>
 </template>
 <script>
-import {mapGetters} from 'vuex'
+import {mapGetters,mapActions} from 'vuex'
 import Listview from 'common/listview'
 
 export default {
@@ -27,10 +27,17 @@ export default {
       }
     },
     created() {
-        console.log(this.rec)
         this._getDetail()
     },
     methods: {
+      selectItem(item,index){
+        console.log(this.songs,index)
+        this.selectPlay({
+          list:this.songlists,
+          index
+        })
+      },
+      ...mapActions(['selectPlay']),
       _getDetail() {
         if (!this.rec.id) {  
           this.$router.push('/recommend')
@@ -41,7 +48,6 @@ export default {
             id:this.rec.id
           }
         }).then(res => {
-          console.log(res.data.playlist)
           this.songlists = res.data.playlist.tracks
         })
       }

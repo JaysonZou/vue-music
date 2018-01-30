@@ -31,7 +31,6 @@ export default {
     },
     methods: {
       selectItem(item,index){
-        console.log(this.songs,index)
         this.selectPlay({
           list:this.songs,
           index
