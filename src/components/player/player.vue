@@ -71,160 +71,185 @@
       </div>
     </div>
     </transition>
-    <audio :src="curSong" ref="audio" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
+    <audio :src="curSong" ref="audio" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
   </div>  
 </template>
 
 <script type="text/ecmascript-6">
-import { mapGetters,mapMutations } from "vuex";
-import Scroll from 'common/scroll/scroll'
-import progressBar from 'common/progress-bar.vue';
-import LyricParser from 'lyric-parser';
+import { mapGetters, mapMutations } from "vuex";
+import Scroll from "common/scroll/scroll";
+import progressBar from "common/progress-bar.vue";
+import LyricParser from "lyric-parser";
 
 export default {
-  data(){
+  data() {
     return {
-      curSong:'',
+      curSong: "",
       songReady: false,
       currentTime: 0,
       songDuration: 0,
       currentLyric: null,
       currentLineNum: 0
-    }
+    };
   },
-  watch:{
-    currentIndex(){
-      this._getSongUrl().then((res) =>{
-        this.curSong = res.data.data[0].url
-      })
-
+  watch: {
+    currentIndex() {
+      this._getSongUrl().then(res => {
+        this.curSong = res.data.data[0].url;
+      });
     },
-    curSong(){
-        this.$nextTick(() => {
-          this.$refs.audio.play();
+    curSong() {
+      setTimeout(() => {
+        this.$refs.audio.play();
+      }, 1000);
+      this._getLyric()
+        .then(res => {
+          if (this.currentLyric) {
+            this.currentLyric.stop();
+          }
+          this.currentLyric = new LyricParser(
+            res.data.lrc.lyric,
+            this.handlerLyric
+          );
+          if (this.playing) {
+            this.currentLyric.play();
+          }
         })
-      this._getLyric().then(res => {
-        if(this.currentLyric){
-          this.currentLyric = null
-        }
-        this.currentLyric = new LyricParser(res.data.lrc.lyric,this.handlerLyric)
-        if(this.playing){
-          this.currentLyric.play()
-        }
-      })
+        .catch(() => {
+          this.currentLyric = null;
+          this.currentLineNum = 0;
+        });
     },
-    playing(newPlaying){
-        const audio = this.$refs.audio
-        this.$nextTick(() => {
-          newPlaying ? audio.play() : audio.pause();
-        })
+    playing(newPlaying) {
+      if (!this.songReady) return;
+      const audio = this.$refs.audio;
+      this.$nextTick(() => {
+        newPlaying ? audio.play() : audio.pause();
+      });
     }
   },
   computed: {
-    playIcon(){
-      return this.playing ? 'icon-icon-5' : 'icon-icon-2'
+    playIcon() {
+      return this.playing ? "icon-icon-5" : "icon-icon-2";
     },
-    rta(){
-      return this.playing ? 'play' : 'play pause'
+    rta() {
+      return this.playing ? "play" : "play pause";
     },
-    percent(){
-      return this.currentTime  / this.songDuration
+    percent() {
+      return this.currentTime / this.songDuration;
     },
-    ...mapGetters(["fullScreen", "playList","currentSong","playing","currentIndex"])
+    ...mapGetters([
+      "fullScreen",
+      "playList",
+      "currentSong",
+      "playing",
+      "currentIndex"
+    ])
   },
 
-  methods:{
-    back(){
-      this.setFullScreen(false)
+  methods: {
+    back() {
+      this.setFullScreen(false);
     },
-    open(){
-      this.setFullScreen(true)
+    open() {
+      this.setFullScreen(true);
     },
-    ready(){
-      this.songReady = true
+    ready() {
+      this.songReady = true;
     },
-    error(){
-      this.songReady = true
+    error() {
+      this.songReady = true;
     },
-    next(){
-      if(!this.songReady) return
-      let index = this.currentIndex + 1
-      if(index === this.playList.length) {
-        index = 0
+    end() {
+      this.next();
+    },
+    next() {
+      if (!this.songReady) return;
+      let index = this.currentIndex + 1;
+      if (index === this.playList.length) {
+        index = 0;
       }
-      this.setCurrentIndex(index)
-      if(!this.playing){
-        this.togglePlaying()
+      this.setCurrentIndex(index);
+      if (!this.playing) {
+        this.togglePlaying();
       }
-      this.songReady = false
+      this.songReady = false;
     },
-    prev(){
-      if(!this.songReady) return
-      let index = this.currentIndex - 1
-      if(index === -1){
-        index = this.playList.length - 1
+    prev() {
+      if (!this.songReady) return;
+      let index = this.currentIndex - 1;
+      if (index === -1) {
+        index = this.playList.length - 1;
       }
-      this.setCurrentIndex(index)
-      if(!this.playing){
-        this.togglePlaying()
+      this.setCurrentIndex(index);
+      if (!this.playing) {
+        this.togglePlaying();
       }
-      this.songReady = false
+      this.songReady = false;
     },
-    updateTime(e){
-      this.currentTime = e.target.currentTime
-      this.songDuration = e.target.duration
+    updateTime(e) {
+      this.currentTime = e.target.currentTime;
+      this.songDuration = e.target.duration;
     },
-    format(interval){
-      interval = interval | 0
-      const min = interval / 60 | 0
-      const sec = this._pad(interval%60)
-      return `${min}:${sec}`
+    format(interval) {
+      interval = interval | 0;
+      const min = (interval / 60) | 0;
+      const sec = this._pad(interval % 60);
+      return `${min}:${sec}`;
     },
-    _pad(num,n=2){
-      let len = num.toString().length
-      while (len<n){
-        num = '0'+num
-        len++
+    _pad(num, n = 2) {
+      let len = num.toString().length;
+      while (len < n) {
+        num = "0" + num;
+        len++;
       }
-      return num
+      return num;
     },
-    onProgressBarChange(percent){
-      this.$refs.audio.currentTime = this.songDuration * percent
-      if(!this.playing){
-        this.togglePlaying()
+    onProgressBarChange(percent) {
+      const currentTime = this.songDuration * percent;
+      this.$refs.audio.currentTime = currentTime;
+      if (!this.playing) {
+        this.togglePlaying();
+      }
+      if (this.currentLyric) {
+        this.currentLyric.seek(currentTime * 1000);
       }
     },
     ...mapMutations({
-      setFullScreen : 'SET_FULL_SCREEN',
-      setPlayingState: 'SET_PLAYING_STATE',
-      setCurrentIndex: 'SET_CURRENT_INDEX'
+      setFullScreen: "SET_FULL_SCREEN",
+      setPlayingState: "SET_PLAYING_STATE",
+      setCurrentIndex: "SET_CURRENT_INDEX"
     }),
-    togglePlaying(){
-      this.setPlayingState(!this.playing)
+    togglePlaying() {
+      if (!this.songReady) return;
+      this.setPlayingState(!this.playing);
+      if (this.currentLyric) {
+        this.currentLyric.togglePlay();
+      }
     },
-    _getSongUrl: async function(){
-      var result = await this.axios.get("/api/music/url",{
-        params:{id:this.currentSong.id}
-      })
-      return result
+    _getSongUrl: async function() {
+      var result = await this.axios.get("/api/music/url", {
+        params: { id: this.currentSong.id }
+      });
+      return result;
     },
-    _getLyric: async function(){
-      var lyric = this.axios.get("/api/lyric",{
-        params:{id: this.currentSong.id}
-      })
-      return lyric
+    _getLyric: async function() {
+      var lyric = await this.axios.get("/api/lyric", {
+        params: { id: this.currentSong.id }
+      });
+      return lyric;
     },
-    handlerLyric(lineNum,txt){
-      this.currentLineNum = lineNum.lineNum
-      if(this.currentLineNum > 2){
-        let lineEl = this.$refs.lyricLine[this.currentLineNum - 2]
-        this.$refs.lyricList.scrollToElement(lineEl,1000)
-      }else{
-        this.$refs.lyricList.scrollTo(0,0,1000)
+    handlerLyric(lineNum, txt) {
+      this.currentLineNum = lineNum.lineNum;
+      if (this.currentLineNum > 1) {
+        let lineEl = this.$refs.lyricLine[this.currentLineNum - 1];
+        this.$refs.lyricList.scrollToElement(lineEl, 1000);
+      } else {
+        this.$refs.lyricList.scrollTo(0, 0, 1000);
       }
     }
   },
-  components:{
+  components: {
     progressBar,
     Scroll
   }
@@ -234,30 +259,31 @@ export default {
 <style scoped>
 @import url(../../common/fonts2/iconfont.css);
 
-.player .normal-player{
+.player .normal-player {
   position: fixed;
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
-  z-index: 150;background-color: black;
+  z-index: 150;
+  background-color: black;
 }
-.player .normal-player .background{
+.player .normal-player .background {
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   z-index: -1;
-  opacity: .6;
+  opacity: 0.6;
   filter: blur(20px);
 }
 .normal-player .top {
   position: relative;
   margin-bottom: 25px;
 }
-.normal-player .top .back{
-  position :absolute;
+.normal-player .top .back {
+  position: absolute;
   top: 0;
   left: 6px;
   z-index: 50;
@@ -278,7 +304,7 @@ export default {
   font-size: 20px;
   color: white;
 }
-.normal-player .top .subtitle{
+.normal-player .top .subtitle {
   line-height: 20px;
   text-align: center;
   font-size: 15px;
@@ -300,7 +326,7 @@ export default {
   height: 0;
   padding-top: 80%;
 }
-.middle .cd-wrapper{
+.middle .cd-wrapper {
   position: absolute;
   left: 10%;
   top: 0;
@@ -322,48 +348,48 @@ export default {
   height: 100%;
   border-radius: 50%;
 }
-.middle .playing-lyric-wrapper{
+.middle .playing-lyric-wrapper {
   width: 80%;
   height: 15vh;
   margin: 20px auto 0 auto;
   overflow: hidden;
   text-align: center;
 }
-.middle .text{
+.middle .text {
   font-size: 15px;
   line-height: 5vh;
   color: white;
 }
-.middle .text.current{
-   color: #31c27c;
-}  
+.middle .text.current {
+  color: #31c27c;
+}
 .bottom {
   position: absolute;
   bottom: 50px;
   width: 100%;
 }
-.bottom .progress-wrapper{
+.bottom .progress-wrapper {
   display: flex;
   align-items: center;
   width: 80%;
   margin: 0px auto;
   padding: 10px 0;
 }
-.bottom .progress-wrapper .time{
+.bottom .progress-wrapper .time {
   color: #ccc;
   font-size: 8px;
   flex: 0 0 30px;
   line-height: 30px;
   width: 30px;
 }
-.bottom .time .time-l{
+.bottom .time .time-l {
   text-align: left;
 }
-.bottom .time .time-r{
+.bottom .time .time-r {
   text-align: right;
 }
-.bottom .progress-bar-wrapper{
-  flex:1;
+.bottom .progress-bar-wrapper {
+  flex: 1;
 }
 .bottom .operators {
   display: flex;
@@ -373,7 +399,7 @@ export default {
   flex: 1;
   color: #31c27c;
 }
-.bottom i{
+.bottom i {
   font-size: 30px;
 }
 .bottom .i-left {
@@ -389,27 +415,32 @@ export default {
 .bottom .i-right {
   text-align: left;
 }
-.normal-enter-active, .normal-leave-active{
-   transition: all 0.4s;
+.normal-enter-active,
+.normal-leave-active {
+  transition: all 0.4s;
 }
-.normal-enter-active, .normal-leave-active .top{
-   transition: all 0.4s cubic-bezier(0.86, 0.18, 0.82, 1.32);
+.normal-enter-active,
+.normal-leave-active .top {
+  transition: all 0.4s cubic-bezier(0.86, 0.18, 0.82, 1.32);
 }
-.normal-enter-active, .normal-leave-active .bottom{
-   transition: all 0.4s cubic-bezier(0.86, 0.18, 0.82, 1.32);
+.normal-enter-active,
+.normal-leave-active .bottom {
+  transition: all 0.4s cubic-bezier(0.86, 0.18, 0.82, 1.32);
 }
-.normal-enter, .normal-leave-to{
+.normal-enter,
+.normal-leave-to {
   opacity: 0;
 }
-.normal-enter, .normal-leave-to .top{
+.normal-enter,
+.normal-leave-to .top {
   transform: translate3d(0, -100px, 0);
 }
-.normal-enter, .normal-leave-to .bottom {
+.normal-enter,
+.normal-leave-to .bottom {
   transform: translate3d(0, 100px, 0);
 }
 
-
-.mini-player{
+.mini-player {
   display: flex;
   align-items: center;
   position: fixed;
@@ -420,10 +451,12 @@ export default {
   height: 60px;
   background: #eee;
 }
- .mini-enter-active, .mini-leave-active{
+.mini-enter-active,
+.mini-leave-active {
   transition: all 0.4s;
- }
-.mini-enter, .mini-leave-to{
+}
+.mini-enter,
+.mini-leave-to {
   opacity: 0;
 }
 .mini-player .icon {
@@ -431,10 +464,10 @@ export default {
   width: 40px;
   margin: 0 10px;
 }
-.mini-player .icon img{
+.mini-player .icon img {
   border-radius: 50%;
 }
-.mini-player .text{
+.mini-player .text {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -452,128 +485,22 @@ export default {
   color: black;
 }
 .mini-player .iconfont {
-  font-size: 30px;
+  font-size: 33px;
   color: #31c27c;
-  margin-right: 5px;
+  margin-right: 10px;
 }
-.play{
+.play {
   animation: rotate 20s linear infinite;
 }
-.pause{
+.pause {
   animation-play-state: paused;
 }
-@keyframes rotate{
-  0%  {transform: rotate(0);}
-  100% {transform: rotate(360deg);}
+@keyframes rotate {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
-   
-  /* .player
-
-      .background
-      .top
-        .back
-          
-          .icon-back
-            
-        .title
-        .subtitle
-          
-      .middle
-        
-        .middle-l
-          
-          .cd-wrapper
-            
-            .cd
-              
-              &.play
-                animation: rotate 20s linear infinite
-              &.pause
-                animation-play-state: paused
-              .image
-                
-
-          
-        .middle-r
-          display: inline-block
-          vertical-align: top
-          width: 100%
-          height: 100%
-          overflow: hidden
-          .lyric-wrapper
-            width: 80%
-            margin: 0 auto
-            overflow: hidden
-            text-align: center
-            .text
-              line-height: 32px
-              color: $color-text-l
-              font-size: $font-size-medium
-              &.current
-                color: $color-text
-      .bottom
-        
-        .dot-wrapper
-          text-align: center
-          font-size: 0
-          .dot
-            display: inline-block
-            vertical-align: middle
-            margin: 0 4px
-            width: 8px
-            height: 8px
-            border-radius: 50%
-            background: $color-text-l
-            &.active
-              width: 20px
-              border-radius: 5px
-              background: $color-text-ll
-        
-        .operators
-          
-          .icon
-            
-            i
-            
-          .i-left
-            
-          .i-center
-            i
-          .i-right
-          .icon-favorite
-            color: $color-sub-theme
-      &.normal-enter-active, &.normal-leave-active
-        transition: all 0.4s
-        .top, .bottom
-          transition: all 0.4s cubic-bezier(0.86, 0.18, 0.82, 1.32)
-      &.normal-enter, &.normal-leave-to
-        opacity: 0
-        .top
-          transform: translate3d(0, -100px, 0)
-        .bottom
-          transform: translate3d(0, 100px, 0)
-    .mini-player
-      
-      .icon
-        
-        img
-          border-radius: 50%
-          &.play
-            animation: rotate 10s linear infinite
-          &.pause
-            animation-play-state: paused
-      .text
-        
-        .name
-          
-        .desc
-          
-      .control
-        .icon-play-mini, .icon-pause-mini, .icon-playlist
-          font-size: 30px
-          color: $color-theme-d
-        .icon-mini
-          
-
-   */
 </style>

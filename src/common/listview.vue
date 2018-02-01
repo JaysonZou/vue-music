@@ -25,13 +25,13 @@
 </div>
 </template>
 <script>
-import Loading from 'common/loading/loading'
+import Loading from "common/loading/loading";
 
 export default {
-  data(){
+  data() {
     return {
       scrollEnd: true
-    }
+    };
   },
   props: ["bgImage", "title", "songs"],
   computed: {
@@ -39,30 +39,30 @@ export default {
       return `background-image:url(${this.bgImage})`;
     }
   },
-  methods:{
-    selectItem(item,index){
-      this.$emit('select',item,index)
+  methods: {
+    selectItem(item, index) {
+      this.$emit("select", item, index);
     },
-    back(){
-      this.$router.back()
+    back() {
+      this.$router.back();
     },
-    pageSlide(e){
-      if(!this.scrollEnd) return
-      this.scrollEnd = false
-      if(e.target.scrollTop >= 220){
+    pageSlide(e) {
+      if (!this.scrollEnd) return;
+      this.scrollEnd = false;
+      if (e.target.scrollTop >= 220) {
         this.$refs.bgImage.style.position = "fixed";
-        this.$refs.bgImage.style.paddingTop=0
-        this.$refs.bgImage.style.height= "40px"
+        this.$refs.bgImage.style.paddingTop = 0;
+        this.$refs.bgImage.style.height = "40px";
         this.$refs.bgImage.style.zIndex = 10;
-      }else{
-        this.$refs.bgImage.style.position = "relative"
-        this.$refs.bgImage.style.paddingTop= "70%"
-        this.$refs.bgImage.style.height= 0
+      } else {
+        this.$refs.bgImage.style.position = "relative";
+        this.$refs.bgImage.style.paddingTop = "70%";
+        this.$refs.bgImage.style.height = 0;
       }
-      this.scrollEnd = true
+      this.scrollEnd = true;
     }
   },
-  components:{
+  components: {
     Loading
   }
 };
@@ -79,7 +79,9 @@ export default {
   overflow-y: scroll;
   z-index: 100;
 }
-.listview::-webkit-scrollbar {display:none}
+.listview::-webkit-scrollbar {
+  display: none;
+}
 .top {
   position: fixed;
   width: 100%;
@@ -87,8 +89,8 @@ export default {
   z-index: 40;
   background-color: transparent;
 }
-.top .back{
-  position :absolute;
+.top .back {
+  position: absolute;
   top: 0;
   left: 6px;
   z-index: 50;
@@ -148,16 +150,14 @@ export default {
   margin: 3px;
   background-color: #fff;
 }
-.song p{
+.song p {
   font-size: 13px;
   color: #999;
 }
-.loading-container{
+.loading-container {
   position: absolute;
   width: 100%;
   top: 70%;
   transform: translateY(-50%);
 }
 </style>
-
-
