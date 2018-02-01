@@ -1,6 +1,7 @@
 # Vue版QQ音乐
 
 > 音乐API来自[Binaryify/NeteaseCloudMusicApi](https://binaryify.github.io/NeteaseCloudMusicApi),非常感谢！
+
 > [预览地址]()
 
 ## Build Setup
@@ -64,10 +65,10 @@ npm run build
 
 ## 部分截图
 
-[](./prev/1.gif)
-[](./prev/2.gif)
-[](./prev/3.gif)
-[](./prev/4.gif)
+[推荐页](./prev/1.gif)
+[歌单详情](./prev/2.gif)
+[歌手列表](./prev/3.gif)
+[播放器页面](./prev/4.gif)
 
 ## 最后
 项目最难处理的无疑是vuex的数据管理了，使用vuex需要你对整个的业务逻辑了然于胸才行，在一开始思路清晰非常重要，否则后面不停地修补就会非常烦人。在整个的项目过程中我用到了三个包，better-scroll，lyric-parser和vue-lazyload，其余的组件全部是自己手写的，自己封装了loading，swiper轮播，listview等组件，我觉得在代码复用上我有了很大的认识和进步。
