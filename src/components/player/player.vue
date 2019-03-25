@@ -228,7 +228,7 @@ export default {
       }
     },
     _getSongUrl: async function() {
-      var result = await this.axios.get("/api/music/url", {
+      var result = await this.axios.get("/api/song/url", {
         params: { id: this.currentSong.id }
       });
       return result;
