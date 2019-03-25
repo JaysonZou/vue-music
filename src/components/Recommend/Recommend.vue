@@ -2,7 +2,7 @@
   <div class="recommend">
       <div class="swiper-container">
         <swiper :sum="6" v-if="bannerlist">
-          <img v-for="x of bannerlist" :src="x.pic" class="swiper-item" style="width:100vw;height:25vh;">
+          <img v-for="x of bannerlist" :src="x.imageUrl" class="swiper-item" style="width: 100vw;height:25vh;">
         </swiper>
       </div>
       <div class="options">
