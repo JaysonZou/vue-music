@@ -1,8 +1,7 @@
 # Vue版QQ音乐
 
-> 音乐API来自[Binaryify/NeteaseCloudMusicApi](https://binaryify.github.io/NeteaseCloudMusicApi),非常感谢！
-
-> [预览地址]()
+> **音乐API来自[Binaryify/NeteaseCloudMusicApi](https://binaryify.github.io/NeteaseCloudMusicApi),非常感谢！
+> 运行前请确保此NodeJs的API接口先在本地跑起来，Node项目用法见官方文档[Binaryify/NeteaseCloudMusicApi](https://binaryify.github.io/NeteaseCloudMusicApi)。**
 
 ## Build Setup
 
